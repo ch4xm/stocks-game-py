@@ -4,6 +4,8 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import atexit
 import configparser
+
+
 #https://stackoverflow.com/questions/19078170/python-how-would-you-save-a-simple-settings-config-file
 def stock_name(symbol):
     url = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query={}&region=1&lang=en".format(symbol)
@@ -14,12 +16,13 @@ def stock_name(symbol):
 def stock_price(stock_choice):
     options = Options()
     options.headless = True
-    browser = webdriver.Firefox(options=options)
-    browser.implicitly_wait(10)
-    browser.get("https://finance.yahoo.com/quote/" + stock_choice)
-    soup = BeautifulSoup(browser.page_source, features="lxml")
-    price = soup.find_all("span", {"class":"Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)"})
-    price = float(str(price[0]).replace('<span class="Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)" data-reactid="52">', '').replace('</span>', ''))
+    #browser = webdriver.Firefox(options=options)
+    #browser.implicitly_wait(10)
+    #browser.get("https://finance.yahoo.com/quote/" + stock_choice)
+    html = requests.get("https://finance.yahoo.com/quote/"+stock_choice)
+    soup = BeautifulSoup(html.text, features="lxml")
+    find = soup.find_all("span", {"class":"Trsdu(0.3s) Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(b)"})
+    price = float((str(find[0]).replace('<span class="Trsdu(0.3s) Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(b)" data-reactid="14">', '').replace('</span>', '').replace(",", "")))
     return price
 def reset_config():
     reset = open("StockProfile.ini", "w")
@@ -153,7 +156,7 @@ while repeat == "yes":
                 print("You have "+str(key[1])+" units of the stock "+str(stock_value[0]).upper()+".")
     if user_choice == "c":
         stock_choice = input("Which stock to check price of? (e.g NVDA) ")
-        print("The price of one stock of "+stock_choice+" is "+stock_price(stock_choice))
+        print("The price of one stock of "+stock_choice+" is "+str(stock_price(stock_choice)))
     # repeat = input("Restart session? (yes/no) ").lower()
     write_current_dict()
     print("\n")
